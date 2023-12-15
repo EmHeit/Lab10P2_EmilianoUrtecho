@@ -1,15 +1,17 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
- */
 package lab8p2_mejorado;
 
 import java.awt.Color;
 import static java.lang.Thread.sleep;
 import java.util.ArrayList;
+import javax.swing.DefaultListModel;
 import javax.swing.JOptionPane;
 import javax.swing.JProgressBar;
+import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
+import java.util.List;
+import javax.swing.JDialog;
+import javax.swing.JList;
+import javax.swing.ListSelectionModel;
 
 /**
  *
@@ -22,11 +24,52 @@ public class principal extends javax.swing.JFrame {
      */
     private ArrayList<User> user = new ArrayList();
     private ArrayList<Admin> admin = new ArrayList();
-
+    private ArrayList<Jugador> jugador = new ArrayList();
+    private DefaultTableModel tableM;
+    private ArrayList<Carro> listaCarro = new ArrayList();
+    hiloCarga pb, pb2;
+    private DefaultListModel listaModel;
+    
+    
     public principal() {
         initComponents();
-    }
+        
+        tableM = new  DefaultTableModel();
+        tableM.addColumn("Marca");
+        tableM.addColumn("Modelo");
+        tableM.addColumn("Anio");
+        tableM.addColumn("Color");
+        tableM.addColumn("Precio");
+        
+        jT_garaje = new JTable(tableM);
+        
+        jT_compra = new JTable();
+        tableM = new DefaultTableModel();
+        jT_compra.setModel(tableM);
 
+        add(jT_compra);
+        
+        jT_venta = new JTable();
+        tableM = new DefaultTableModel();
+        jT_venta.setModel(tableM);
+        
+        add(jT_venta);
+    
+        
+        jL_mejoras = new JList();
+        jL_mejoras.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        jL_mejoras.setLayoutOrientation(JList.VERTICAL);
+
+        add(jL_mejoras);
+    
+    }
+    public void actualizarTablaConcesionaria(List<Carro> carrosDisponibles) {
+        tableM.setRowCount(0);
+        for (Carro carro : carrosDisponibles) {
+            Object[] rowData = {carro.getMarca(), carro.getModelo(), carro.getPrecio(), carro.getColor()};
+            tableM.addRow(rowData);
+        }
+    }
     public boolean UsuarioExistente(String usuario) {
         for (int i = 0; i < user.size(); i++) {
             if (usuario.equals(user.get(i).getNombreU())) {
@@ -35,7 +78,31 @@ public class principal extends javax.swing.JFrame {
         }
         return false;
     }
+    
+    public void actualizarListaMejoras(List<Parte> partesDisponibles) {
+        DefaultListModel<Parte> modeloLista = new DefaultListModel<>();
 
+        for (Parte parte : partesDisponibles) {
+            modeloLista.addElement(parte);
+        }
+        jL_mejoras.setModel(listaModel);
+    }
+    
+    private void cargarTabla() {
+        limpiarTabla();
+        
+        for (Carro carro : listaCarro) {
+            Object[] fila = {carro.getMarca(), carro.getModelo(), carro.getPrecio(), carro.getColor()};
+            tableM.addRow(fila);
+        }
+    }    
+    private void limpiarTabla() {
+        while (tableM.getRowCount() > 0) {
+            tableM.removeRow(0);
+        }
+    }
+    
+    
     public boolean ConfirmarFecha(String fecha) {
         int fechaInt = Integer.parseInt(fecha);
         int anio = (2023 - fechaInt);
@@ -67,46 +134,28 @@ public class principal extends javax.swing.JFrame {
         }
         return false;
     }
-        class pg extends Thread {
+    private void comprarCarroSeleccionado() {
+        int filaSeleccionada = jT_compra.getSelectedRow();
 
-        JProgressBar pb_carga;
+        if (filaSeleccionada != -1) {
+            // Obtener información del carro seleccionado
+            int idCarro = (int) tableM.getValueAt(filaSeleccionada, 0);
+            String modeloCarro = (String) tableM.getValueAt(filaSeleccionada, 1);
+            int precioCarro = (int) tableM.getValueAt(filaSeleccionada, 2);
 
-        public pg(JProgressBar pb_carga) {
-            this.pb_carga = pb_carga;
-        }
-        
-        @Override
-        public void run() {
-            int min = 0;
-            int max = 10;
+            boolean compraExitosa = user.contains(new Carro(idCarro, modeloCarro, precioCarro));
 
-            pb_carga.setMinimum(min);
-            pb_carga.setMaximum(max - 1);
-            pb_carga.setValue(0);
-            
-            
-
-            for (int i = min; i < max; i++) {
-                pb_carga.setValue(i);
-                pb_carga.setBackground(Color.red);
-
-                try {
-                    sleep(500);
-                } catch (InterruptedException ex) {
-                    ex.printStackTrace();
-                }
+            if (compraExitosa) {
+                tableM.removeRow(filaSeleccionada);
+                JOptionPane.showMessageDialog(this, "La compra se ha realizada con éxito");
+            } else {
+                JOptionPane.showMessageDialog(this, "No tienes suficiente dinero para comprar este carro");
             }
-            if (pb_carga.getValue() == max - 1) {
-                JOptionPane.showMessageDialog(null, "Accion Completada");
-                
-            }
-            if (pb_carga.getValue() == max-1) {
-            pb_carga.setValue(0);
-        }
-            
-            
+        } else {
+            JOptionPane.showMessageDialog(this, "Selecciona un carro antes de comprar");
         }
     }    
+    
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -188,12 +237,29 @@ public class principal extends javax.swing.JFrame {
         jPanel7 = new javax.swing.JPanel();
         p_compra = new javax.swing.JPanel();
         jPanel18 = new javax.swing.JPanel();
+        jScrollPane6 = new javax.swing.JScrollPane();
+        jT_compra = new javax.swing.JTable();
+        jButton3 = new javax.swing.JButton();
+        pb_compra = new javax.swing.JProgressBar();
         p_ventas = new javax.swing.JPanel();
         jPanel19 = new javax.swing.JPanel();
+        jScrollPane7 = new javax.swing.JScrollPane();
+        jT_venta = new javax.swing.JTable();
         p_instMV = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        jList1 = new javax.swing.JList<>();
+        jL_mejoras = new javax.swing.JList<>();
         jPanel20 = new javax.swing.JPanel();
+        jPanel1 = new javax.swing.JPanel();
+        pb_carro1 = new javax.swing.JProgressBar();
+        pb_carro2 = new javax.swing.JProgressBar();
+        jLabel32 = new javax.swing.JLabel();
+        jLabel33 = new javax.swing.JLabel();
+        jButton2 = new javax.swing.JButton();
+        jScrollPane8 = new javax.swing.JScrollPane();
+        jT_garaje1 = new javax.swing.JTable();
+        jPanel8 = new javax.swing.JPanel();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        jT_garaje = new javax.swing.JTable();
         d_paginaA = new javax.swing.JDialog();
         p_paginaAdmin = new javax.swing.JPanel();
         jTabbedPane1 = new javax.swing.JTabbedPane();
@@ -220,6 +286,7 @@ public class principal extends javax.swing.JFrame {
         t_listarC = new javax.swing.JTable();
         jPanel25 = new javax.swing.JPanel();
         jPanel12 = new javax.swing.JPanel();
+        jToolBar1 = new javax.swing.JToolBar();
         p_IniciarSesionU = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
         jSeparator2 = new javax.swing.JSeparator();
@@ -547,6 +614,11 @@ public class principal extends javax.swing.JFrame {
         tp_main.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
         tp_main.setForeground(new java.awt.Color(0, 0, 0));
         tp_main.setFont(new java.awt.Font("Broadway", 0, 12)); // NOI18N
+        tp_main.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                tp_mainStateChanged(evt);
+            }
+        });
 
         p_jugadores.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
@@ -607,7 +679,7 @@ public class principal extends javax.swing.JFrame {
         );
         p_cjLayout.setVerticalGroup(
             p_cjLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, 362, Short.MAX_VALUE)
+            .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, 257, Short.MAX_VALUE)
         );
 
         tp_jugador.addTab("Crear Jugador", p_cj);
@@ -650,7 +722,7 @@ public class principal extends javax.swing.JFrame {
             p_bjLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(p_bjLayout.createSequentialGroup()
                 .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, 260, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 102, Short.MAX_VALUE))
+                .addGap(0, 0, Short.MAX_VALUE))
         );
 
         tp_jugador.addTab("Listar Jugador", p_bj);
@@ -670,7 +742,7 @@ public class principal extends javax.swing.JFrame {
             p_mjLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(p_mjLayout.createSequentialGroup()
                 .addComponent(jPanel5, javax.swing.GroupLayout.PREFERRED_SIZE, 260, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 102, Short.MAX_VALUE))
+                .addGap(0, 0, Short.MAX_VALUE))
         );
 
         tp_jugador.addTab("Modificar Jugador", p_mj);
@@ -690,12 +762,12 @@ public class principal extends javax.swing.JFrame {
             p_ejLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(p_ejLayout.createSequentialGroup()
                 .addComponent(jPanel6, javax.swing.GroupLayout.PREFERRED_SIZE, 257, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 105, Short.MAX_VALUE))
+                .addGap(0, 0, Short.MAX_VALUE))
         );
 
         tp_jugador.addTab("Eliminar Jugador", p_ej);
 
-        p_jugadores.add(tp_jugador, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 79, 690, -1));
+        p_jugadores.add(tp_jugador, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 79, 690, 290));
 
         jPanel7.setBackground(new java.awt.Color(255, 255, 255));
         jPanel7.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
@@ -705,98 +777,77 @@ public class principal extends javax.swing.JFrame {
 
         tp_main.addTab("Jugadores", p_jugadores);
 
+        p_compra.setBackground(new java.awt.Color(255, 255, 255));
         p_compra.setEnabled(false);
+        p_compra.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
         jPanel18.setBackground(new java.awt.Color(255, 255, 255));
         jPanel18.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
         jPanel18.setForeground(new java.awt.Color(0, 0, 0));
+        jPanel18.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
+        p_compra.add(jPanel18, new org.netbeans.lib.awtextra.AbsoluteConstraints(344, 183, -1, -1));
 
-        javax.swing.GroupLayout jPanel18Layout = new javax.swing.GroupLayout(jPanel18);
-        jPanel18.setLayout(jPanel18Layout);
-        jPanel18Layout.setHorizontalGroup(
-            jPanel18Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 698, Short.MAX_VALUE)
-        );
-        jPanel18Layout.setVerticalGroup(
-            jPanel18Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 368, Short.MAX_VALUE)
-        );
+        jT_compra.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null},
+                {null, null},
+                {null, null},
+                {null, null}
+            },
+            new String [] {
+                "Marca", "Modelo"
+            }
+        ));
+        jScrollPane6.setViewportView(jT_compra);
 
-        javax.swing.GroupLayout p_compraLayout = new javax.swing.GroupLayout(p_compra);
-        p_compra.setLayout(p_compraLayout);
-        p_compraLayout.setHorizontalGroup(
-            p_compraLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 700, Short.MAX_VALUE)
-            .addGroup(p_compraLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(p_compraLayout.createSequentialGroup()
-                    .addGap(0, 0, Short.MAX_VALUE)
-                    .addComponent(jPanel18, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGap(0, 0, Short.MAX_VALUE)))
-        );
-        p_compraLayout.setVerticalGroup(
-            p_compraLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 370, Short.MAX_VALUE)
-            .addGroup(p_compraLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(p_compraLayout.createSequentialGroup()
-                    .addGap(0, 0, Short.MAX_VALUE)
-                    .addComponent(jPanel18, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGap(0, 0, Short.MAX_VALUE)))
-        );
+        p_compra.add(jScrollPane6, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 40, -1, 286));
+
+        jButton3.setText("Comprar");
+        jButton3.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jButton3MouseClicked(evt);
+            }
+        });
+        p_compra.add(jButton3, new org.netbeans.lib.awtextra.AbsoluteConstraints(520, 140, -1, -1));
+        p_compra.add(pb_compra, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 10, 550, 20));
 
         tp_main.addTab("Compra", p_compra);
 
+        p_ventas.setBackground(new java.awt.Color(255, 255, 255));
         p_ventas.setEnabled(false);
+        p_ventas.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
         jPanel19.setBackground(new java.awt.Color(255, 255, 255));
         jPanel19.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
         jPanel19.setForeground(new java.awt.Color(0, 0, 0));
+        jPanel19.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
+        p_ventas.add(jPanel19, new org.netbeans.lib.awtextra.AbsoluteConstraints(344, 183, -1, -1));
 
-        javax.swing.GroupLayout jPanel19Layout = new javax.swing.GroupLayout(jPanel19);
-        jPanel19.setLayout(jPanel19Layout);
-        jPanel19Layout.setHorizontalGroup(
-            jPanel19Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 698, Short.MAX_VALUE)
-        );
-        jPanel19Layout.setVerticalGroup(
-            jPanel19Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 368, Short.MAX_VALUE)
-        );
+        jT_venta.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
+            },
+            new String [] {
+                "Title 1", "Title 2", "Title 3", "Title 4"
+            }
+        ));
+        jScrollPane7.setViewportView(jT_venta);
 
-        javax.swing.GroupLayout p_ventasLayout = new javax.swing.GroupLayout(p_ventas);
-        p_ventas.setLayout(p_ventasLayout);
-        p_ventasLayout.setHorizontalGroup(
-            p_ventasLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 700, Short.MAX_VALUE)
-            .addGroup(p_ventasLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(p_ventasLayout.createSequentialGroup()
-                    .addGap(0, 0, Short.MAX_VALUE)
-                    .addComponent(jPanel19, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGap(0, 0, Short.MAX_VALUE)))
-        );
-        p_ventasLayout.setVerticalGroup(
-            p_ventasLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 370, Short.MAX_VALUE)
-            .addGroup(p_ventasLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(p_ventasLayout.createSequentialGroup()
-                    .addGap(0, 0, Short.MAX_VALUE)
-                    .addComponent(jPanel19, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGap(0, 0, Short.MAX_VALUE)))
-        );
+        p_ventas.add(jScrollPane7, new org.netbeans.lib.awtextra.AbsoluteConstraints(124, 56, 435, 233));
 
         tp_main.addTab("Ventas", p_ventas);
 
         p_instMV.setEnabled(false);
         p_instMV.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
-        jList1.setBackground(new java.awt.Color(255, 255, 255));
-        jList1.setFont(new java.awt.Font("OCR A Extended", 1, 12)); // NOI18N
-        jList1.setForeground(new java.awt.Color(0, 0, 0));
-        jList1.setModel(new javax.swing.AbstractListModel<String>() {
-            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
-            public int getSize() { return strings.length; }
-            public String getElementAt(int i) { return strings[i]; }
-        });
-        jScrollPane1.setViewportView(jList1);
+        jL_mejoras.setBackground(new java.awt.Color(255, 255, 255));
+        jL_mejoras.setFont(new java.awt.Font("OCR A Extended", 1, 12)); // NOI18N
+        jL_mejoras.setForeground(new java.awt.Color(0, 0, 0));
+        jL_mejoras.setModel(new DefaultListModel());
+        jScrollPane1.setViewportView(jL_mejoras);
 
         p_instMV.add(jScrollPane1, new org.netbeans.lib.awtextra.AbsoluteConstraints(26, 6, 290, 355));
 
@@ -818,6 +869,62 @@ public class principal extends javax.swing.JFrame {
         p_instMV.add(jPanel20, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 700, 370));
 
         tp_main.addTab("Instalacion de Mejoras Visuales", p_instMV);
+
+        jPanel1.setBackground(new java.awt.Color(255, 255, 255));
+        jPanel1.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
+        jPanel1.add(pb_carro1, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 160, 570, 30));
+        jPanel1.add(pb_carro2, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 220, 560, 30));
+
+        jLabel32.setText("Carro 2");
+        jPanel1.add(jLabel32, new org.netbeans.lib.awtextra.AbsoluteConstraints(300, 200, -1, -1));
+
+        jLabel33.setText("Carro 1");
+        jPanel1.add(jLabel33, new org.netbeans.lib.awtextra.AbsoluteConstraints(300, 130, -1, -1));
+
+        jButton2.setText("Iniciar Carrera");
+        jButton2.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jButton2MouseClicked(evt);
+            }
+        });
+        jPanel1.add(jButton2, new org.netbeans.lib.awtextra.AbsoluteConstraints(270, 320, -1, -1));
+
+        jT_garaje1.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null, null, null},
+                {null, null, null, null, null, null},
+                {null, null, null, null, null, null},
+                {null, null, null, null, null, null}
+            },
+            new String [] {
+                "Marca", "Modelo", "Anio", "Color", "Precio", "Estado"
+            }
+        ));
+        jScrollPane8.setViewportView(jT_garaje1);
+
+        jPanel1.add(jScrollPane8, new org.netbeans.lib.awtextra.AbsoluteConstraints(60, 10, 550, 100));
+
+        tp_main.addTab("Carrera", jPanel1);
+
+        jPanel8.setBackground(new java.awt.Color(255, 255, 255));
+        jPanel8.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
+
+        jT_garaje.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null, null, null},
+                {null, null, null, null, null, null},
+                {null, null, null, null, null, null},
+                {null, null, null, null, null, null}
+            },
+            new String [] {
+                "Marca", "Modelo", "Anio", "Color", "Precio", "Estado"
+            }
+        ));
+        jScrollPane2.setViewportView(jT_garaje);
+
+        jPanel8.add(jScrollPane2, new org.netbeans.lib.awtextra.AbsoluteConstraints(60, 40, 550, 240));
+
+        tp_main.addTab("Garaje", jPanel8);
 
         d_paginaU.getContentPane().add(tp_main, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 690, 400));
 
@@ -985,6 +1092,8 @@ public class principal extends javax.swing.JFrame {
                     .addComponent(p_paginaAdmin, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGap(0, 0, Short.MAX_VALUE)))
         );
+
+        jToolBar1.setRollover(true);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         getContentPane().setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
@@ -1234,6 +1343,9 @@ public class principal extends javax.swing.JFrame {
         } else {
             JOptionPane.showMessageDialog(this, "Nombre de usuario o password incorrecta");
         }
+        
+        pb = new hiloCarga(pb_carga);
+        pb.start();
     }//GEN-LAST:event_b_iniciarSesionActionPerformed
 
     private void b_crearCuentaMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_b_crearCuentaMouseEntered
@@ -1504,6 +1616,34 @@ public class principal extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_b_crearCActionPerformed
 
+    private void jButton2MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jButton2MouseClicked
+        jT_garaje1.getSelectionModel().addListSelectionListener(e -> {        
+        if (rootPaneCheckingEnabled) {
+            int filaSeleccionada = jT_garaje1.getSelectedRow();            
+        }
+        JDialog carreraCarro1 = new JDialog(this, "Carrera Carro 1", true);
+        JDialog carreraCarro2 = new JDialog(this, "Carrera Carro 2", true);
+        hiloCarrera hiloCarro1 = new hiloCarrera(pb_carro1, carreraCarro1);
+        hiloCarrera hiloCarro2 = new hiloCarrera(pb_carro2, carreraCarro2);
+        hiloCarro1.start();
+        hiloCarro2.start();        
+        
+        });
+    }//GEN-LAST:event_jButton2MouseClicked
+
+    private void tp_mainStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_tp_mainStateChanged
+        int seleccion = tp_main.getSelectedIndex();
+        if (seleccion == 3) {
+            
+        }
+    }//GEN-LAST:event_tp_mainStateChanged
+
+    private void jButton3MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jButton3MouseClicked
+        pb2 = new hiloCarga(pb_compra);
+        pb2.start();
+        comprarCarroSeleccionado();
+    }//GEN-LAST:event_jButton3MouseClicked
+
     /**
      * @param args the command line arguments
      */
@@ -1561,8 +1701,11 @@ public class principal extends javax.swing.JFrame {
     private javax.swing.JFormattedTextField ff_fechaNacimiento;
     private javax.swing.JFormattedTextField ff_fechaNacimiento1;
     private javax.swing.JButton jButton1;
+    private javax.swing.JButton jButton2;
+    private javax.swing.JButton jButton3;
     private javax.swing.JComboBox<String> jComboBox1;
     private javax.swing.JFormattedTextField jFormattedTextField1;
+    private javax.swing.JList<String> jL_mejoras;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
@@ -1588,14 +1731,16 @@ public class principal extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel30;
     private javax.swing.JLabel jLabel31;
+    private javax.swing.JLabel jLabel32;
+    private javax.swing.JLabel jLabel33;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
-    private javax.swing.JList<String> jList1;
     private javax.swing.JList<String> jList3;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel10;
     private javax.swing.JPanel jPanel11;
     private javax.swing.JPanel jPanel12;
@@ -1612,11 +1757,16 @@ public class principal extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel5;
     private javax.swing.JPanel jPanel6;
     private javax.swing.JPanel jPanel7;
+    private javax.swing.JPanel jPanel8;
     private javax.swing.JPanel jPanel9;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JScrollPane jScrollPane5;
+    private javax.swing.JScrollPane jScrollPane6;
+    private javax.swing.JScrollPane jScrollPane7;
+    private javax.swing.JScrollPane jScrollPane8;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator10;
     private javax.swing.JSeparator jSeparator11;
@@ -1636,9 +1786,14 @@ public class principal extends javax.swing.JFrame {
     private javax.swing.JSeparator jSeparator7;
     private javax.swing.JSeparator jSeparator8;
     private javax.swing.JSeparator jSeparator9;
+    private javax.swing.JTable jT_compra;
+    private javax.swing.JTable jT_garaje;
+    private javax.swing.JTable jT_garaje1;
+    private javax.swing.JTable jT_venta;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JTextField jTextField4;
     private javax.swing.JTextField jTextField5;
+    private javax.swing.JToolBar jToolBar1;
     private javax.swing.JPanel p_IniciarSesionA;
     private javax.swing.JPanel p_IniciarSesionU;
     private javax.swing.JPanel p_bj;
@@ -1653,6 +1808,9 @@ public class principal extends javax.swing.JFrame {
     private javax.swing.JPanel p_paginaAdmin;
     private javax.swing.JPanel p_ventas;
     private javax.swing.JProgressBar pb_carga;
+    private javax.swing.JProgressBar pb_carro1;
+    private javax.swing.JProgressBar pb_carro2;
+    private javax.swing.JProgressBar pb_compra;
     private javax.swing.JPasswordField pf_password;
     private javax.swing.JPasswordField pf_password1;
     private javax.swing.JTable t_listarC;

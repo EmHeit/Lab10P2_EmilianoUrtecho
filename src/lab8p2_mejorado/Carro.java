@@ -1,10 +1,11 @@
 
 package lab8p2_mejorado;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Carro {
+public class Carro implements Serializable {
     private String modelo;
     private String color;
     private double precio;
@@ -13,19 +14,36 @@ public class Carro {
     private boolean reconstruido;
     private String paisProcedencia;
     private String anioFabricacion;
+    private int horsepower;
+    private int velocidadPunta;
+    private int tiempo0a60;
+    private int tiempo0a100;
+    private Circuito circuito;
+    
 
-    public Carro(String modelo, String color, double precio, String marca, List<MejorasVisuales> mejorasVisuales,
-                boolean reconstruido, String paisProcedencia, String anioFabricacion) {
+    public Carro(String modelo, String color, double precio, String marca,
+                 List<MejorasVisuales> mejorasVisuales, boolean reconstruido,
+                 String paisP, String anioFabricacion, int horsepower,
+                 int velocidadPunta, int tiempo0a60, int tiempo0a100, Circuito circuito) {
         this.modelo = modelo;
         this.color = color;
         this.precio = precio;
         this.marca = marca;
-        this.mejorasVisuales = mejorasVisuales;
+        this.mejorasVisuales = new ArrayList<>(mejorasVisuales);
         this.reconstruido = reconstruido;
-        this.paisProcedencia = paisProcedencia;
+        this.paisProcedencia = paisP;
         this.anioFabricacion = anioFabricacion;
+        this.horsepower = horsepower;
+        this.velocidadPunta = velocidadPunta;
+        this.tiempo0a60 = tiempo0a60;
+        this.tiempo0a100 = tiempo0a100;
+        this.circuito = circuito;
     }
 
+    Carro(int idCarro, String modeloCarro, int precioCarro) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+    
     public String getModelo() {
         return modelo;
     }
